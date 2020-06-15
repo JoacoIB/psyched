@@ -29,3 +29,6 @@ class Image(object):
 
     def __str__(self) -> str:
         return f'Image<{self.name}:{self.tag}>'
+
+    def __del__(self):
+        self.client.close()
