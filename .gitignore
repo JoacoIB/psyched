@@ -1,0 +1,12 @@
+# VSCode
+.vscode
+
+# Python
+**/__pycache__
+# Building
+build
+dist
+psyched.egg-info
+
+# Images
+dag.png
