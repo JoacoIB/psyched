@@ -4,7 +4,7 @@ python:
 branches:
   only:
     - master
-    - development
+    - develop
 script:
  - python -m unittest
 
