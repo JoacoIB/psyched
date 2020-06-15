@@ -40,7 +40,3 @@ class TestImageMethods(unittest.TestCase):
             )
         output = container.logs()
         self.assertEqual(output, b'')
-
-
-if __name__ == '__main__':
-    unittest.main()
