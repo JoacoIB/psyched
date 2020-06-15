@@ -1,15 +1,18 @@
 language: python
 python:
-  - "3.8"
+- '3.8'
 branches:
   only:
-    - master
-    - develop
+  - master
+  - develop
 install:
-  - pip install -r requirements.txt
+- pip install -r requirements.txt
 script:
- - python -m unittest
- - flake8
- - pycodestyle
-
-
+- python -m unittest
+- flake8
+- pycodestyle
+deploy:
+  password:
+    secure: P1SOK2RABb5fnHEL3n/Le+W5hJw1VQVbhMwbHD53UjTRvUGsIpXwEBejOLtQGFgPmDr706SbdHXzAkHxBAzjD+sFaxTOnav6Ank9Ze93vOrQdFKGn7b00cUb+W4ZweOIr3m4A/PvY3cpq9Z4Lo9EHhqf98h/1C7N2Vs9OugEwXqVswXxEcOsTT4tSvv30/cfYEtBDcpZWAbXVbvN8/iCw0ZMAA1mpmkmtLfc3SAkVtJUT4M8mrPDyzohW6sqLCrVSn7ho2m5WEzKvXTo+z4LVz+WQG4szw0U0U+pqUGvqq0MnzEaBQsjx7CwM/s42juJgw2pulRiOyaVMObhS9R45D8bxP7WnfcPQH62IKON99gEDAZZqFtgdJGQsBq1YcyVy0rK3WRG99syiaLWBZ59oIEJ825ZPZxlZgK5Wij7Rzgvz544nRmFvrxCyS3FHvgXnoCJRy1BuGc5XIJOLkvIrDB9w8+9h+0hrAQRUKA+MhC8AdNx/hkSnq3TKXJ1NnJZukPOfuLRYADTWw791tQW3LUOgls8TtvrSmHPRRjOzKLlg7mJEyWers9V+z/FIygoUdvXROPJ7rGpKZl87s4R4j+yQiyDTOMnMF8j6mqnSM+ULeVQKwCs3a5ElK7raKhdLwjMw+eepY2p+FiRetvMwubFho6OHmZtLcs49ZJuZFw=
+  on:
+    branch: master
