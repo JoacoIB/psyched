@@ -12,11 +12,8 @@ _status_failed = 'failed'
 
 
 class Task(object):
-    def __init__(self, name: str, image: Image, command: str):
+    def __init__(self, name: str):
         self.name = name
-        self.image = image
-        self.command = command
-        self.container = None
         self.status = _status_waiting
         self.upstream = []
         self.downstream = []
@@ -44,37 +41,25 @@ class Task(object):
         self.status = _status_scheduled
         return True
 
-    def run(self) -> bool:
-        assert self.status == _status_scheduled
-        self.container = self.image.run_command(self.command)
-        self.status = _status_running
-        return True
+    def run(self):
+        raise NotImplementedError
 
     def try_to_finish(self) -> bool:
-        assert self.status == _status_running
-        if self.container.status != 'running':
-            result = self.container.wait()
-            if result['StatusCode'] == 0:
-                self.succeed()
-            else:
-                self.fail()
-            return True
-        else:
-            return False
+        raise NotImplementedError
 
-    def succeed(self) -> bool:
+    def succeed(self):
         self.status = _status_succeeded
         for t in self.downstream:
             t.try_to_schedule()
-        return True
+        return
 
-    def fail(self) -> bool:
+    def fail(self):
         if self.status == _status_failed:
             return
         self.status = _status_failed
         for t in self.downstream:
             t.fail()
-        return True
+        return
 
     def set_upstream(self, t: Task):
         if t not in self.upstream:
@@ -140,3 +125,29 @@ class Task(object):
 
     def __str__(self):
         return f'Task<{self.name}> ({self.status})'
+
+
+class DockerTask(Task):
+    def __init__(self, name: str, image: Image, command: str):
+        self.image = image
+        self.container = None
+        self.command = command
+        super(DockerTask, self).__init__(name)
+
+    def run(self):
+        assert self.status == _status_scheduled
+        self.container = self.image.run_command(self.command)
+        self.status = _status_running
+        return
+
+    def try_to_finish(self) -> bool:
+        assert self.status == _status_running
+        if self.container.status != 'running':
+            result = self.container.wait()
+            if result['StatusCode'] == 0:
+                self.succeed()
+            else:
+                self.fail()
+            return True
+        else:
+            return False

@@ -2,7 +2,7 @@ import unittest
 
 from psyched.dag import DAG
 from psyched.image import Image
-from psyched.task import Task, _status_failed, _status_succeeded
+from psyched.task import DockerTask, _status_failed, _status_succeeded
 
 
 class TestDAGMethods(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestDAGMethods(unittest.TestCase):
         self.dag = DAG()
 
     def test_add_task(self):
-        t1 = Task("test_task", self.image, "true")
+        t1 = DockerTask("test_task", self.image, "true")
         self.dag.add_task(t1)
 
         self.assertEqual(
@@ -20,17 +20,17 @@ class TestDAGMethods(unittest.TestCase):
             )
 
     def test_new_task(self):
-        self.dag.new_task("test_task", self.image, "true")
+        self.dag.new_task("test_task",  task_type='docker',  image=self.image, command="true")
         self.assertEqual(
             list(self.dag.tasks.keys()),
             ["test_task"]
             )
 
     def test_run_success(self):
-        t1 = self.dag.new_task("test_task_1", self.image, "true")
-        t2 = self.dag.new_task("test_task_2", self.image, "true")
-        t3 = self.dag.new_task("test_task_3", self.image, "true")
-        t4 = self.dag.new_task("test_task_4", self.image, "true")
+        t1 = self.dag.new_task("test_task_1",  task_type='docker',  image=self.image, command="true")
+        t2 = self.dag.new_task("test_task_2",  task_type='docker',  image=self.image, command="true")
+        t3 = self.dag.new_task("test_task_3",  task_type='docker',  image=self.image, command="true")
+        t4 = self.dag.new_task("test_task_4",  task_type='docker',  image=self.image, command="true")
 
         t1 >> [t2, t3] >> t4
 
@@ -40,10 +40,10 @@ class TestDAGMethods(unittest.TestCase):
             self.assertEqual(t.status, _status_succeeded)
 
     def test_run_failure(self):
-        t1 = self.dag.new_task("test_task_1", self.image, "true")
-        t2 = self.dag.new_task("test_task_2", self.image, "true")
-        t3 = self.dag.new_task("test_task_3", self.image, "false")
-        t4 = self.dag.new_task("test_task_4", self.image, "true")
+        t1 = self.dag.new_task("test_task_1",  task_type='docker',  image=self.image, command="true")
+        t2 = self.dag.new_task("test_task_2",  task_type='docker',  image=self.image, command="true")
+        t3 = self.dag.new_task("test_task_3",  task_type='docker',  image=self.image, command="false")
+        t4 = self.dag.new_task("test_task_4",  task_type='docker',  image=self.image, command="true")
 
         t1 >> [t2, t3] >> t4
 

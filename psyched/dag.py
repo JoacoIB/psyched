@@ -3,8 +3,7 @@ import time
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from .image import Image
-from .task import Task
+from .task import DockerTask, Task
 
 
 class DAG (object):
@@ -18,8 +17,13 @@ class DAG (object):
         self.tasks[task.get_name()] = task
         return
 
-    def new_task(self, name: str, image: Image, command: str) -> Task:
-        t = Task(name, image, command)
+    def new_task(self, name: str, task_type: str, **kwargs) -> Task:
+        if task_type == 'docker':
+            image = kwargs['image']
+            command = kwargs['command']
+            t = DockerTask(name, image, command)
+        else:
+            raise ValueError(f"Unknown task type '{task_type}'")
         self.add_task(t)
         return t
 
@@ -51,5 +55,4 @@ class DAG (object):
                 if self.tasks[k].is_pending():
                     pending += 1
                 print(self.tasks[k])
-        self.draw()
         return

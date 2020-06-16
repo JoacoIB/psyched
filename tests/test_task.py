@@ -1,17 +1,17 @@
 import unittest
 
 from psyched.image import Image
-from psyched.task import (Task, _status_failed, _status_running,
+from psyched.task import (DockerTask, _status_failed, _status_running,
                           _status_scheduled, _status_succeeded,
                           _status_waiting)
 
 
-class TestTaskMethods(unittest.TestCase):
+class TestDockerTaskMethods(unittest.TestCase):
     def setUp(self):
         self.image = Image('amd64/ubuntu', '20.04')
 
     def test_update_success_cycle(self):
-        t1 = Task("test_task", self.image, "true")
+        t1 = DockerTask("test_task", self.image, "true")
         self.assertEqual(t1.status, _status_waiting)
 
         t1.try_to_schedule()
@@ -31,7 +31,7 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(d_running, -1)
 
     def test_update_failure_cycle(self):
-        t1 = Task("test_task", self.image, "false")
+        t1 = DockerTask("test_task", self.image, "false")
         self.assertEqual(t1.status, _status_waiting)
 
         t1.try_to_schedule()
@@ -52,31 +52,31 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(d_running, -1)
 
     def test_schedule_ready(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
         t1 >> t2
 
         t1.succeed()
         self.assertEqual(t2.status, _status_scheduled)
 
     def test_schedule_not_ready(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
         t1 >> t2
 
         t2.try_to_schedule()
         self.assertEqual(t2.status, _status_waiting)
 
     def test_failed_dep(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
         t1 >> t2
 
         t1.fail()
         self.assertEqual(t2.status, _status_failed)
 
     def test_finish_success(self):
-        t1 = Task("test_task", self.image, "true")
+        t1 = DockerTask("test_task", self.image, "true")
         t1.try_to_schedule()
         t1.run()
         t1.container.wait()
@@ -84,7 +84,7 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t1.status, _status_succeeded)
 
     def test_finish_fail(self):
-        t1 = Task("test_task", self.image, "false")
+        t1 = DockerTask("test_task", self.image, "false")
         t1.try_to_schedule()
         t1.run()
         t1.container.wait()
@@ -92,8 +92,8 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t1.status, _status_failed)
 
     def test_rshift(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
 
         t1 >> t2
 
@@ -101,9 +101,9 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t2.upstream, [t1])
 
     def test_rshift_list(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
-        t3 = Task("test_task_3", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
+        t3 = DockerTask("test_task_3", self.image, "true")
 
         t1 >> [t2, t3]
 
@@ -112,8 +112,8 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t3.upstream, [t1])
 
     def test_lshift(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
 
         t1 << t2
 
@@ -121,9 +121,9 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t2.downstream, [t1])
 
     def test_lshift_list(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
-        t3 = Task("test_task_3", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
+        t3 = DockerTask("test_task_3", self.image, "true")
 
         t1 << [t2, t3]
 
@@ -132,9 +132,9 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t3.downstream, [t1])
 
     def test_rrshift(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
-        t3 = Task("test_task_3", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
+        t3 = DockerTask("test_task_3", self.image, "true")
 
         [t1, t2] >> t3
 
@@ -143,9 +143,9 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEqual(t2.downstream, [t3])
 
     def test_rlshift(self):
-        t1 = Task("test_task_1", self.image, "true")
-        t2 = Task("test_task_2", self.image, "true")
-        t3 = Task("test_task_3", self.image, "true")
+        t1 = DockerTask("test_task_1", self.image, "true")
+        t2 = DockerTask("test_task_2", self.image, "true")
+        t3 = DockerTask("test_task_3", self.image, "true")
 
         [t1, t2] << t3
 
