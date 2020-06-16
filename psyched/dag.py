@@ -3,7 +3,7 @@ import time
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from .task import DockerTask, Task
+from .task import DockerTask, PythonTask, Task
 
 
 class DAG (object):
@@ -22,6 +22,10 @@ class DAG (object):
             image = kwargs['image']
             command = kwargs['command']
             t = DockerTask(name, image, command)
+        elif task_type == 'python':
+            target = kwargs['target']
+            del(kwargs['target'])
+            t = PythonTask(name, target, **kwargs)
         else:
             raise ValueError(f"Unknown task type '{task_type}'")
         self.add_task(t)

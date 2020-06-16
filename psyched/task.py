@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Tuple, Union
+import threading
+from typing import Callable, List, Tuple, Union
 
 from .image import Image
 
@@ -145,6 +146,45 @@ class DockerTask(Task):
         if self.container.status != 'running':
             result = self.container.wait()
             if result['StatusCode'] == 0:
+                self.succeed()
+            else:
+                self.fail()
+            return True
+        else:
+            return False
+
+
+class PythonTask(Task):
+    def __init__(self, name: str, target: Callable, **kwargs):
+        self.target = target
+        self.kwargs = kwargs
+        self.thread = None
+        self.error = []
+        super(PythonTask, self).__init__(name)
+
+    def run(self):
+        assert self.status == _status_scheduled
+
+        def wrapped_function(__target, __error, **kwargs):
+            try:
+                __target(**kwargs)
+            except Exception as e:
+                __error.append(e)
+            return
+
+        self.thread = threading.Thread(
+            target=wrapped_function,
+            args=(self.target, self.error),
+            kwargs=self.kwargs)
+        self.thread.start()
+        self.status = _status_running
+        return
+
+    def try_to_finish(self) -> bool:
+        assert self.status == _status_running
+        if not self.thread.is_alive():
+            self.thread.join()
+            if self.error == []:
                 self.succeed()
             else:
                 self.fail()
