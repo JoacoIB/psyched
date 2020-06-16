@@ -11,6 +11,7 @@ class DAG (object):
     def __init__(self, max_parallel_workers: int = 1):
         self.tasks = dict()
         self.max_parallel_tasks = max_parallel_workers
+        self.running = 0
         return
 
     def add_task(self, task: Task):
@@ -37,15 +38,18 @@ class DAG (object):
         return
 
     def run(self):
-        running = 0
+        for k in self.tasks:
+            self.tasks[k].try_to_schedule()
         pending = len(self.tasks)
-        while pending != 0:
+        while pending > 0:
+            pending = 0
             time.sleep(1)
             print('='*30)
             for k in self.tasks:
-                d_running, d_pending = self.tasks[k].update_status(runnable=running < self.max_parallel_tasks)
-                running += d_running
-                pending += d_pending
+                d_run = self.tasks[k].update_status(runnable=self.running < self.max_parallel_tasks)
+                self.running += d_run
+                if self.tasks[k].is_pending():
+                    pending += 1
                 print(self.tasks[k])
         self.draw()
         return

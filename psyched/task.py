@@ -23,39 +23,25 @@ class Task(object):
         return
 
     def update_status(self, runnable: bool = False) -> Tuple[int, int]:
-        if self.status == _status_waiting:
-            if self.schedule():
-                if self.status == _status_failed:
-                    return (0, -1)
-                else:
-                    return (0, 0)
-            else:
-                return (0, 0)
-        elif self.status == _status_scheduled:
+        if self.status == _status_scheduled:
             if runnable:
                 self.run()
-                return (1, 0)
+                return 1
             else:
-                return (0, 0)
+                return 0
         elif self.status == _status_running:
-            if self.finish():
-                return (-1, -1)
+            if self.try_to_finish():
+                return -1
             else:
-                return (0, 0)
-        else:
-            return (0, 0)
+                return 0
+        return 0
 
-    def schedule(self) -> bool:
+    def try_to_schedule(self) -> bool:
         assert self.status == _status_waiting
         for dep in self.upstream:
             if dep.status != _status_succeeded:
-                if dep.status == _status_failed:
-                    self.fail()
-                    break
-                else:
-                    return False
-        else:
-            self.status = _status_scheduled
+                return False
+        self.status = _status_scheduled
         return True
 
     def run(self) -> bool:
@@ -64,7 +50,7 @@ class Task(object):
         self.status = _status_running
         return True
 
-    def finish(self) -> bool:
+    def try_to_finish(self) -> bool:
         assert self.status == _status_running
         if self.container.status != 'running':
             result = self.container.wait()
@@ -78,10 +64,16 @@ class Task(object):
 
     def succeed(self) -> bool:
         self.status = _status_succeeded
+        for t in self.downstream:
+            t.try_to_schedule()
         return True
 
     def fail(self) -> bool:
+        if self.status == _status_failed:
+            return
         self.status = _status_failed
+        for t in self.downstream:
+            t.fail()
         return True
 
     def set_upstream(self, t: Task):
@@ -104,6 +96,9 @@ class Task(object):
 
     def get_downstream(self) -> List[Task]:
         return self.downstream
+
+    def is_pending(self) -> bool:
+        return self.status not in [_status_succeeded, _status_failed]
 
     def get_color(self) -> str:
         cmap = {

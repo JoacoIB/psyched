@@ -13,95 +13,82 @@ class TestTaskMethods(unittest.TestCase):
     def test_update_success_cycle(self):
         t1 = Task("test_task", self.image, "true")
         self.assertEqual(t1.status, _status_waiting)
-        d_running, d_pending = t1.update_status(runnable=True)
+
+        t1.try_to_schedule()
+        self.assertEqual(t1.status, _status_scheduled)
+
+        d_running = t1.update_status(runnable=False)
         self.assertEqual(t1.status, _status_scheduled)
         self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, 0)
-        d_running, d_pending = t1.update_status(runnable=False)
-        self.assertEqual(t1.status, _status_scheduled)
-        self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, 0)
-        d_running, d_pending = t1.update_status(runnable=True)
+
+        d_running = t1.update_status(runnable=True)
         self.assertEqual(t1.status, _status_running)
         self.assertEqual(d_running, 1)
-        self.assertEqual(d_pending, 0)
+
         t1.container.wait()
-        d_running, d_pending = t1.update_status(runnable=True)
+        d_running = t1.update_status(runnable=True)
         self.assertEqual(t1.status, _status_succeeded)
         self.assertEqual(d_running, -1)
-        self.assertEqual(d_pending, -1)
 
     def test_update_failure_cycle(self):
         t1 = Task("test_task", self.image, "false")
         self.assertEqual(t1.status, _status_waiting)
 
-        d_running, d_pending = t1.update_status(runnable=True)
+        t1.try_to_schedule()
+        self.assertEqual(t1.status, _status_scheduled)
+
+        d_running = t1.update_status(runnable=False)
         self.assertEqual(t1.status, _status_scheduled)
         self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, 0)
 
-        d_running, d_pending = t1.update_status(runnable=False)
-        self.assertEqual(t1.status, _status_scheduled)
-        self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, 0)
-
-        d_running, d_pending = t1.update_status(runnable=True)
+        d_running = t1.update_status(runnable=True)
         self.assertEqual(t1.status, _status_running)
         self.assertEqual(d_running, 1)
-        self.assertEqual(d_pending, 0)
+
         t1.container.wait()
 
-        d_running, d_pending = t1.update_status(runnable=True)
+        d_running = t1.update_status(runnable=True)
         self.assertEqual(t1.status, _status_failed)
         self.assertEqual(d_running, -1)
-        self.assertEqual(d_pending, -1)
 
     def test_schedule_ready(self):
         t1 = Task("test_task_1", self.image, "true")
         t2 = Task("test_task_2", self.image, "true")
         t1 >> t2
 
-        t1.status = _status_succeeded
-        d_running, d_pending = t2.update_status(runnable=True)
+        t1.succeed()
         self.assertEqual(t2.status, _status_scheduled)
-        self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, 0)
 
     def test_schedule_not_ready(self):
         t1 = Task("test_task_1", self.image, "true")
         t2 = Task("test_task_2", self.image, "true")
         t1 >> t2
 
-        d_running, d_pending = t2.update_status(runnable=True)
+        t2.try_to_schedule()
         self.assertEqual(t2.status, _status_waiting)
-        self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, 0)
 
-    def test_schedule_failed_dep(self):
+    def test_failed_dep(self):
         t1 = Task("test_task_1", self.image, "true")
         t2 = Task("test_task_2", self.image, "true")
         t1 >> t2
 
-        t1.status = _status_failed
-        d_running, d_pending = t2.update_status(runnable=True)
+        t1.fail()
         self.assertEqual(t2.status, _status_failed)
-        self.assertEqual(d_running, 0)
-        self.assertEqual(d_pending, -1)
 
     def test_finish_success(self):
         t1 = Task("test_task", self.image, "true")
-        t1.schedule()
+        t1.try_to_schedule()
         t1.run()
         t1.container.wait()
-        t1.finish()
+        t1.try_to_finish()
         self.assertEqual(t1.status, _status_succeeded)
 
     def test_finish_fail(self):
         t1 = Task("test_task", self.image, "false")
-        t1.schedule()
+        t1.try_to_schedule()
         t1.run()
         t1.container.wait()
-        t1.finish()
+        t1.try_to_finish()
         self.assertEqual(t1.status, _status_failed)
 
     def test_rshift(self):
