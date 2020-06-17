@@ -3,7 +3,6 @@ import time
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from .server import serve_dag
 from .task import DockerTask, PythonTask, ShellTask, Task
 
 
