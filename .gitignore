@@ -9,6 +9,9 @@ build
 dist
 psyched.egg-info
 
+# Docs
+docs/_build
+
 # Testing and coverage
 .coverage
 htmlcov
