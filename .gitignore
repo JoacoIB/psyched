@@ -3,10 +3,18 @@
 
 # Python
 **/__pycache__
+
 # Building
 build
 dist
 psyched.egg-info
 
+# Testing and coverage
+.coverage
+htmlcov
+
 # Images
 dag.png
+
+# Other
+TODO
