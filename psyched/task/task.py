@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-import sys
-import threading
-from io import StringIO
-from typing import Callable, List, Tuple, Union
-
-from .image import Image
-from .utils import SysRedirect
+from typing import List, Union
 
 _status_waiting = 'waiting'
 _status_scheduled = 'scheduled'
@@ -23,7 +17,7 @@ class Task(object):
         self.downstream = []
         return
 
-    def update_status(self, runnable: bool = False) -> Tuple[int, int]:
+    def update_status(self, runnable: bool = False) -> int:
         if self.status == _status_scheduled:
             if runnable:
                 self.run()
@@ -132,80 +126,3 @@ class Task(object):
 
     def __str__(self):
         return f'Task<{self.name}> ({self.status})'
-
-
-class DockerTask(Task):
-    def __init__(self, name: str, image: Image, command: str):
-        self.image = image
-        self.container = None
-        self.command = command
-        super(DockerTask, self).__init__(name)
-
-    def run(self):
-        assert self.status == _status_scheduled
-        self.container = self.image.run_command(self.command)
-        self.status = _status_running
-        return
-
-    def try_to_finish(self) -> bool:
-        assert self.status == _status_running
-        if self.container.status != 'running':
-            result = self.container.wait()
-            if result['StatusCode'] == 0:
-                self.succeed()
-            else:
-                self.fail()
-            return True
-        else:
-            return False
-
-    def get_logs(self) -> str:
-        if self.status in [_status_scheduled, _status_waiting]:
-            return ""
-        return self.container.logs().decode("utf-8")
-
-
-class PythonTask(Task):
-    def __init__(self, name: str, target: Callable, **kwargs):
-        self.target = target
-        self.kwargs = kwargs
-        self.thread = None
-        self.error = []
-        self.outfile = StringIO("")
-        super(PythonTask, self).__init__(name)
-
-    def run(self):
-        assert self.status == _status_scheduled
-
-        def wrapped_function(__target, __error, __outfile, **kwargs):
-            sys.stdout.register(self.outfile)
-            try:
-                __target(**kwargs)
-            except Exception as e:
-                __error.append(e)
-            return
-
-        SysRedirect.install()
-
-        self.thread = threading.Thread(
-            target=wrapped_function,
-            args=(self.target, self.error, self.outfile),
-            kwargs=self.kwargs)
-        self.thread.start()
-        self.status = _status_running
-        return
-
-    def try_to_finish(self) -> bool:
-        assert self.status == _status_running
-        if not self.thread.is_alive():
-            self.thread.join()
-            if self.error == []:
-                self.succeed()
-            else:
-                self.fail()
-            return True
-        else:
-            return False
-
-    def get_logs(self) -> str:
-        return self.outfile.getvalue()
