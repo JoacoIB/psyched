@@ -52,11 +52,10 @@ class DAG (object):
         while pending > 0:
             pending = 0
             time.sleep(1)
-            print('='*30)
+
             for k in self.tasks:
                 d_run = self.tasks[k].update_status(runnable=self.running < self.max_parallel_tasks)
                 self.running += d_run
                 if self.tasks[k].is_pending():
                     pending += 1
-                print(self.tasks[k])
         return

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import sys
 import threading
+from io import StringIO
 from typing import Callable, List, Tuple, Union
 
 from .image import Image
+from .utils import SysRedirect
 
 _status_waiting = 'waiting'
 _status_scheduled = 'scheduled'
@@ -76,6 +79,9 @@ class Task(object):
 
     def get_name(self) -> str:
         return self.name
+
+    def get_logs(self) -> str:
+        raise NotImplementedError
 
     def get_upstream(self) -> List[Task]:
         return self.upstream
@@ -153,6 +159,11 @@ class DockerTask(Task):
         else:
             return False
 
+    def get_logs(self) -> str:
+        if self.status in [_status_scheduled, _status_waiting]:
+            return ""
+        return self.container.logs().decode("utf-8")
+
 
 class PythonTask(Task):
     def __init__(self, name: str, target: Callable, **kwargs):
@@ -160,21 +171,25 @@ class PythonTask(Task):
         self.kwargs = kwargs
         self.thread = None
         self.error = []
+        self.outfile = StringIO("")
         super(PythonTask, self).__init__(name)
 
     def run(self):
         assert self.status == _status_scheduled
 
-        def wrapped_function(__target, __error, **kwargs):
+        def wrapped_function(__target, __error, __outfile, **kwargs):
+            sys.stdout.register(self.outfile)
             try:
                 __target(**kwargs)
             except Exception as e:
                 __error.append(e)
             return
 
+        SysRedirect.install()
+
         self.thread = threading.Thread(
             target=wrapped_function,
-            args=(self.target, self.error),
+            args=(self.target, self.error, self.outfile),
             kwargs=self.kwargs)
         self.thread.start()
         self.status = _status_running
@@ -191,3 +206,6 @@ class PythonTask(Task):
             return True
         else:
             return False
+
+    def get_logs(self) -> str:
+        return self.outfile.getvalue()
