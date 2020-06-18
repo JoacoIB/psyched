@@ -5,7 +5,7 @@ from .task import Task, _status_running, _status_scheduled, _status_waiting
 
 
 class DockerTask(Task):
-    """Task representing a command to be ran on a Docker container."""
+    """Task representing a command to be run on a Docker container."""
     def __init__(self, name: str, image: Image, command: str):
         """Class constructor.
 
@@ -13,7 +13,7 @@ class DockerTask(Task):
         :type name: str
         :param image: docker image to run the command
         :type image: Image
-        :param command: command to excec on the container.
+        :param command: command to exec on the container.
         :type command: str
         """
         self.image = image
@@ -29,9 +29,9 @@ class DockerTask(Task):
         return
 
     def try_to_finish(self) -> bool:
-        """Chek if the container exited and update the status accordingly.
+        """Check if the container exited and update the status accordingly.
 
-        :return: wether the task finished.
+        :return: whether the task finished.
         :rtype: bool
         """
         assert self.status == _status_running

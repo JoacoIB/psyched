@@ -10,35 +10,35 @@ _status_failed = 'failed'
 
 
 class Task(object):
-    """Generic Task class from wich specific Task classes inherit.
+    """Generic Task class from which specific Task classes inherit.
 
-    There are two fundamental concepts that need to be understood about taksks:
+    There are two fundamental concepts that need to be understood about tasks:
     * upstream/downstream
     * status
 
-    **Upstream an downstream**
+    **Upstream and downstream**
 
     The key concept that psyched is based on is task interdependency. Some\
-        task B can't start before another task B finishes. When this is\
+        task B can't start before another task A finishes. When this is\
         the case we say A is upstream from B, or conversely, that B is\
         downstream from B. With these relationship we can define complex\
-        dependecy structures called DAGs (Directed Acyclic Graphs).
+        dependency structures called DAGs (Directed Acyclic Graphs).
 
     **Status**
-    During their lifetime tasks travel though a variety of status.
+    During their lifetime tasks go through a variety of status.
 
     ``waiting``: tasks start in this status. It means the task is waiting for\
-        some condition before it is ready to be ran. Maybe some upstream\
-        tasks are not finished yet, maybe the DAG hasn't started.
+        some condition before it is ready to be run. Can be due to either \
+        some upstream tasks not being finished yet or the DAG not having started.
 
-    ``scheduled``: task is ready to be ran. All it's upstream tasks already\
-        finished succesfuly.
+    ``scheduled``: task is ready to be run. All its upstream tasks already\
+        finished successfully.
 
     ``running``: task is running.
 
-    ``succeeded``: task completed successfuly.
+    ``succeeded``: task completed successfully.
 
-    ``failed``: either this task or another task upstream completed unsuccesfuly.
+    ``failed``: either this task or an upstream task completed unsuccessfully.
     """
 
     def __init__(self, name: str):
@@ -59,7 +59,7 @@ class Task(object):
         Runs the task (and updates the status) if it's scheduled and runnable is True.
         If the status is ``running`` tries to finish it.
 
-        :param runnable: indicates weather the task should be run if possible, defaults to False
+        :param runnable: indicates whether the task should be run if possible, defaults to False
         :type runnable: bool, optional
         :return: 1 if started running task, -1 if finished running task, 0 if no changes made
         :rtype: int
@@ -179,9 +179,9 @@ class Task(object):
         return self.downstream
 
     def is_pending(self) -> bool:
-        """Check if this task is still waiting to be ran.
+        """Check if this task has not finished yet.
 
-        :return: wether the Task is pending
+        :return: whether the Task is pending
         :rtype: bool
         """
         return self.status not in [_status_succeeded, _status_failed]

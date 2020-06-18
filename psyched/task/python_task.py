@@ -54,7 +54,7 @@ class PythonTask(Task):
     def try_to_finish(self) -> bool:
         """Check if the associated thread is still alive and update the status accordingly.
 
-        :return: wether the task finished
+        :return: whether the task finished
         :rtype: bool
         """
         assert self.status == _status_running

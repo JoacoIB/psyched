@@ -37,7 +37,7 @@ class ShellTask(Task):
     def try_to_finish(self) -> bool:
         """Check if the subprocess exited and update the status accordingly.
 
-        :return: wether the task finished
+        :return: whether the task finished
         :rtype: bool
         """
         assert self.status == _status_running
