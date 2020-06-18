@@ -6,5 +6,5 @@ pycodestyle==2.5.0
 pydocstyle==5.0.2
 sphinx==3.1.1
 sphinx-rtd-theme==0.5.0
-sphinx-tabs=1.1.13
+sphinx-tabs==1.1.13
 twine==3.1.1
