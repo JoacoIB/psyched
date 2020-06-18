@@ -3,7 +3,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
     name='psyched',
-    version='0.0.2',
+    version='0.1.0',
     scripts=[],
     author="Joaquín Ignacio Barotto",
     author_email="joaquin.barotto@gmail.com",
