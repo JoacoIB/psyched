@@ -1,6 +1,7 @@
 """This module exports the DAG class used to manage and run tasks."""
 import time
 
+from .server import serve_dag
 from .task import DockerTask, PythonTask, ShellTask, Task
 
 
@@ -71,3 +72,7 @@ class DAG():
                 self.running += d_run
                 if self.tasks[k].is_pending():
                     pending += 1
+
+    def serve(self):
+        """Serve this dag on psyched http server."""
+        serve_dag(self)

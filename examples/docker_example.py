@@ -1,7 +1,7 @@
 from psyched.dag import DAG
 from psyched.image import Image
 
-ubuntu = Image('ubuntu', '16.04')
+ubuntu = Image('amd64/ubuntu', '20.04')
 dag = DAG()
 
 a = dag.new_task("First", task_type='docker', image=ubuntu, command="sleep 1")
