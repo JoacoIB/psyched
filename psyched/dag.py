@@ -1,9 +1,10 @@
+"""This module exports the DAG class used to manage and run tasks."""
 import time
 
 from .task import DockerTask, PythonTask, ShellTask, Task
 
 
-class DAG (object):
+class DAG():
     """DAG class to manage task dependencies."""
 
     def __init__(self, max_parallel_workers: int = 1):
@@ -15,7 +16,6 @@ class DAG (object):
         self.tasks = dict()
         self.max_parallel_tasks = max_parallel_workers
         self.running = 0
-        return
 
     def add_task(self, task: Task):
         """Add a Task to the DAG.
@@ -24,7 +24,6 @@ class DAG (object):
         :type task: Task
         """
         self.tasks[task.get_name()] = task
-        return
 
     def new_task(self, name: str, task_type: str, **kwargs) -> Task:
         """Create a new Task and add it to this DAG.
@@ -42,18 +41,18 @@ class DAG (object):
         if task_type == 'docker':
             image = kwargs['image']
             command = kwargs['command']
-            t = DockerTask(name, image, command)
+            task = DockerTask(name, image, command)
         elif task_type == 'python':
             target = kwargs['target']
-            del(kwargs['target'])
-            t = PythonTask(name, target, **kwargs)
+            del kwargs['target']
+            task = PythonTask(name, target, **kwargs)
         elif task_type == 'shell':
             command = kwargs['command']
-            t = ShellTask(name, command)
+            task = ShellTask(name, command)
         else:
             raise ValueError(f"Unknown task type '{task_type}'")
-        self.add_task(t)
-        return t
+        self.add_task(task)
+        return task
 
     def run(self):
         """Run the tasks in the DAG following dependencies.
@@ -72,4 +71,3 @@ class DAG (object):
                 self.running += d_run
                 if self.tasks[k].is_pending():
                     pending += 1
-        return

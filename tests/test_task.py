@@ -1,6 +1,6 @@
 import unittest
 
-from psyched.task import Task, _status_failed
+from psyched.task import Task, _STATUS_FAILED
 
 
 class TestDockerTaskMethods(unittest.TestCase):
@@ -8,7 +8,7 @@ class TestDockerTaskMethods(unittest.TestCase):
         t1 = Task('test_task')
         t1.fail()
         t1.fail()
-        self.assertEqual(t1.status, _status_failed)
+        self.assertEqual(t1.status, _STATUS_FAILED)
 #     def setUp(self):
 #         self.image = Image('amd64/ubuntu', '20.04')
 

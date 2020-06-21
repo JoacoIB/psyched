@@ -1,11 +1,14 @@
+"""This module exports the DockerTask class to represent a task consisting of the execution of a command\
+in a docker container."""
 from __future__ import annotations
 
 from ..image import Image
-from .task import Task, _status_running, _status_scheduled, _status_waiting
+from .task import Task, _STATUS_RUNNING, _STATUS_SCHEDULED, _STATUS_WAITING
 
 
 class DockerTask(Task):
     """Task representing a command to be run on a Docker container."""
+
     def __init__(self, name: str, image: Image, command: str):
         """Class constructor.
 
@@ -23,10 +26,9 @@ class DockerTask(Task):
 
     def run(self):
         """Run the command in a new docker container from the given image."""
-        assert self.status == _status_scheduled
+        assert self.status == _STATUS_SCHEDULED
         self.container = self.image.run_command(self.command)
-        self.status = _status_running
-        return
+        self.status = _STATUS_RUNNING
 
     def try_to_finish(self) -> bool:
         """Check if the container exited and update the status accordingly.
@@ -34,7 +36,7 @@ class DockerTask(Task):
         :return: whether the task finished.
         :rtype: bool
         """
-        assert self.status == _status_running
+        assert self.status == _STATUS_RUNNING
         self.container.reload()
         if self.container.status != 'running':
             result = self.container.wait()
@@ -49,7 +51,6 @@ class DockerTask(Task):
     def wait(self):
         """Block until the task is finished."""
         self.container.wait()
-        return
 
     def get_logs(self) -> str:
         """Get task logs.
@@ -57,6 +58,6 @@ class DockerTask(Task):
         :return: contents of the container logs
         :rtype: str
         """
-        if self.status in [_status_scheduled, _status_waiting]:
+        if self.status in [_STATUS_SCHEDULED, _STATUS_WAITING]:
             return ""
         return self.container.logs().decode("utf-8")

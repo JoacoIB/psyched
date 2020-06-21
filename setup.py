@@ -1,4 +1,5 @@
 import setuptools
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
@@ -7,10 +8,14 @@ setuptools.setup(
     scripts=[],
     author="Joaquín Ignacio Barotto",
     author_email="joaquin.barotto@gmail.com",
-    description="A docker task scheduling package.",
+    description="A interdependent tasks scheduling package.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/joacoib/psyched",
+    project_urls={
+        "Documentation": "https://psyched.readthedocs.io",
+        "Source Code": "https://github.com/joacoib/psyched",
+    },
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -18,4 +23,7 @@ setuptools.setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
     ],
+    install_requires=[
+        'docker>=4.2.1'
+    ]
  )

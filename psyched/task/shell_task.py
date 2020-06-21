@@ -1,10 +1,11 @@
+"""This module exports the ShellTask class to represent a task consisting of the execution of a command in a shell."""
 from __future__ import annotations
 
 import subprocess
 from io import StringIO
 from typing import List
 
-from .task import Task, _status_running, _status_scheduled
+from .task import Task, _STATUS_RUNNING, _STATUS_SCHEDULED
 
 
 class ShellTask(Task):
@@ -25,14 +26,13 @@ class ShellTask(Task):
 
     def run(self):
         """Run command on a subprocess."""
-        assert self.status == _status_scheduled
+        assert self.status == _STATUS_SCHEDULED
         self.process = subprocess.Popen(
             self.command,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT
             )
-        self.status = _status_running
-        return
+        self.status = _STATUS_RUNNING
 
     def try_to_finish(self) -> bool:
         """Check if the subprocess exited and update the status accordingly.
@@ -40,7 +40,7 @@ class ShellTask(Task):
         :return: whether the task finished
         :rtype: bool
         """
-        assert self.status == _status_running
+        assert self.status == _STATUS_RUNNING
         exit_code = self.process.poll()
         if exit_code is not None:
             self.wait()
@@ -55,7 +55,6 @@ class ShellTask(Task):
     def wait(self):
         """Block until the task is finished."""
         self.process.wait()
-        return
 
     def get_logs(self) -> str:
         """Get task logs.

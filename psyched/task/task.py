@@ -1,15 +1,16 @@
+"""This module exports the class Task used as a base class from which specific tasks inherit."""
 from __future__ import annotations
 
 from typing import List, Union
 
-_status_waiting = 'waiting'
-_status_scheduled = 'scheduled'
-_status_running = 'running'
-_status_succeeded = 'succeeded'
-_status_failed = 'failed'
+_STATUS_WAITING = 'waiting'
+_STATUS_SCHEDULED = 'scheduled'
+_STATUS_RUNNING = 'running'
+_STATUS_SUCCEEDED = 'succeeded'
+_STATUS_FAILED = 'failed'
 
 
-class Task(object):
+class Task():
     """Generic Task class from which specific Task classes inherit.
 
     There are two fundamental concepts that need to be understood about tasks:
@@ -48,10 +49,9 @@ class Task(object):
         :type name: str
         """
         self.name = name
-        self.status = _status_waiting
+        self.status = _STATUS_WAITING
         self.upstream = []
         self.downstream = []
-        return
 
     def update_status(self, runnable: bool = False) -> int:
         """Update query status.
@@ -64,17 +64,15 @@ class Task(object):
         :return: 1 if started running task, -1 if finished running task, 0 if no changes made
         :rtype: int
         """
-        if self.status == _status_scheduled:
+        if self.status == _STATUS_SCHEDULED:
             if runnable:
                 self.run()
                 return 1
-            else:
-                return 0
-        elif self.status == _status_running:
+            return 0
+        if self.status == _STATUS_RUNNING:
             if self.try_to_finish():
                 return -1
-            else:
-                return 0
+            return 0
         return 0
 
     def try_to_schedule(self) -> bool:
@@ -83,11 +81,11 @@ class Task(object):
         :return: whether the task was scheduled or not
         :rtype: bool
         """
-        assert self.status == _status_waiting
+        assert self.status == _STATUS_WAITING
         for dep in self.upstream:
-            if dep.status != _status_succeeded:
+            if dep.status != _STATUS_SUCCEEDED:
                 return False
-        self.status = _status_scheduled
+        self.status = _STATUS_SCHEDULED
         return True
 
     def run(self):
@@ -108,41 +106,37 @@ class Task(object):
 
     def succeed(self):
         """Set task status as succeeded and try to schedule downstream tasks."""
-        self.status = _status_succeeded
-        for t in self.downstream:
-            t.try_to_schedule()
-        return
+        self.status = _STATUS_SUCCEEDED
+        for task in self.downstream:
+            task.try_to_schedule()
 
     def fail(self):
         """Set task status as failed and does the same recursively downstream."""
-        if self.status == _status_failed:
+        if self.status == _STATUS_FAILED:
             return
-        self.status = _status_failed
-        for t in self.downstream:
-            t.fail()
-        return
+        self.status = _STATUS_FAILED
+        for task in self.downstream:
+            task.fail()
 
-    def set_upstream(self, t: Task):
+    def set_upstream(self, task: Task):
         """Set another task as downstream from this one.
 
-        :param t: Task downstream to this one
-        :type t: Task
+        :param task: Task downstream to this one
+        :type task: Task
         """
-        if t not in self.upstream:
-            self.upstream.append(t)
-            t.set_downstream(self)
-        return
+        if task not in self.upstream:
+            self.upstream.append(task)
+            task.set_downstream(self)
 
-    def set_downstream(self, t: Task):
+    def set_downstream(self, task: Task):
         """Set another task as upstream from this one.
 
-        :param t: Task upstream to this one
-        :type t: Task
+        :param task: Task upstream to this one
+        :type task: Task
         """
-        if t not in self.downstream:
-            self.downstream.append(t)
-            t.set_upstream(self)
-        return
+        if task not in self.downstream:
+            self.downstream.append(task)
+            task.set_upstream(self)
 
     def get_name(self) -> str:
         """Get this task name.
@@ -184,7 +178,7 @@ class Task(object):
         :return: whether the Task is pending
         :rtype: bool
         """
-        return self.status not in [_status_succeeded, _status_failed]
+        return self.status not in [_STATUS_SUCCEEDED, _STATUS_FAILED]
 
     def __rshift__(self, other: Union[Task, List[Task]]) -> Union[Task, List[Task]]:
         """Operator >>.
@@ -194,8 +188,8 @@ class Task(object):
         if isinstance(other, Task):
             self.set_downstream(other)
         elif isinstance(other, list):
-            for t in other:
-                self >> t
+            for task in other:
+                self >> task
         else:
             raise TypeError("Invalid type for >>")
         return other
@@ -208,8 +202,8 @@ class Task(object):
         if isinstance(other, Task):
             self.set_upstream(other)
         elif isinstance(other, list):
-            for t in other:
-                self << t
+            for task in other:
+                self << task
         else:
             raise TypeError("Invalid type for >>")
         return other

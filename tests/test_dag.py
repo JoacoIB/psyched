@@ -2,8 +2,8 @@ import unittest
 
 from psyched.dag import DAG
 from psyched.image import Image
-from psyched.task import (DockerTask, PythonTask, _status_failed,
-                          _status_succeeded)
+from psyched.task import (DockerTask, PythonTask, _STATUS_FAILED,
+                          _STATUS_SUCCEEDED)
 
 
 class TestDAGMethods(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestDAGMethods(unittest.TestCase):
         self.dag.run()
 
         for t in [t1, t2, t3, t4]:
-            self.assertEqual(t.status, _status_succeeded)
+            self.assertEqual(t.status, _STATUS_SUCCEEDED)
 
     def test_run_failure(self):
         t1 = self.dag.new_task("test_task_1",  task_type='docker',  image=self.image, command="true")
@@ -70,7 +70,7 @@ class TestDAGMethods(unittest.TestCase):
         self.dag.run()
 
         for t in [t1, t2]:
-            self.assertEqual(t.status, _status_succeeded)
+            self.assertEqual(t.status, _STATUS_SUCCEEDED)
 
         for t in [t3, t4]:
-            self.assertEqual(t.status, _status_failed)
+            self.assertEqual(t.status, _STATUS_FAILED)

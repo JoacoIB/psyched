@@ -1,9 +1,10 @@
+"""This module exports the Image class to act as an interface with docker images."""
 import os
 
 import docker
 
 
-class Image(object):
+class Image():
     """Class representing a Docker Image."""
 
     def __init__(self, name: str, tag: str):
@@ -18,7 +19,6 @@ class Image(object):
         self.name = name
         self.tag = tag
         self.volumes = {}
-        return
 
     def add_volume(self, host_path: str, containter_path: str,
                    mode: str = 'rw'):
@@ -33,7 +33,6 @@ class Image(object):
         """
         host_path = os.path.abspath(host_path)
         self.volumes[host_path] = {'bind': containter_path, 'mode': mode}
-        return
 
     def run_command(self, command: str) -> docker.models.containers.Container:
         """Run command in a detached container.
