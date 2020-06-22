@@ -180,6 +180,25 @@ class Task():
         """
         return self.status not in [_STATUS_SUCCEEDED, _STATUS_FAILED]
 
+    def check_cycles(self):
+        """Cheks if the task is part of a cycle.
+
+        :raises RuntimeError: if it finds a cycle
+        """
+        visited = []
+        pending = self.get_downstream()
+        while pending != []:
+            task = pending[0]
+            if self == task:
+                raise RuntimeError(f"Task {self} is part of a cycle.")
+            visited.append(task)
+            downstream_tasks = [
+                dtask
+                for dtask in task.get_downstream()
+                if dtask not in visited and dtask not in pending
+                ]
+            pending = pending[1:] + downstream_tasks
+
     def __rshift__(self, other: Union[Task, List[Task]]) -> Union[Task, List[Task]]:
         """Operator >>.
 
@@ -193,6 +212,7 @@ class Task():
         else:
             raise TypeError("Invalid type for >>")
         return other
+        self.check_cycles()
 
     def __lshift__(self, other: Union[Task, List[Task]]) -> Union[Task, List[Task]]:
         """Operator <<.
@@ -207,6 +227,7 @@ class Task():
         else:
             raise TypeError("Invalid type for >>")
         return other
+        self.check_cycles()
 
     def __rrshift__(self, other: List[Task]) -> Task:
         """Reverse operator >>.
