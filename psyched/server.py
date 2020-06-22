@@ -2,7 +2,8 @@
 import os
 import pathlib
 
-from flask import Flask
+from flask import Flask, jsonify
+
 
 app = Flask(
     __name__,
@@ -13,17 +14,26 @@ app = Flask(
     )
 
 
-def _build_api(dag):
-    @app.route('/')
-    def index():
-        return app.send_static_file('index.html')
-
-
 def serve_dag(dag):
     """Present a dag on the psyched http server.
 
     :param dag: dag to serve
     :type dag: DAG
     """
-    _build_api(dag)
+    @app.route('/')
+    def index():
+        return app.send_static_file('index.html')
+
+    @app.route('/dag')
+    def dag_status():
+        result = [
+            {
+                'name': task.name,
+                'status': task.status,
+                'upstream': [t.name for t in task.get_upstream()],
+                'downstream': [t.name for t in task.get_downstream()],
+            }
+            for task in dag.tasks.values()
+        ]
+        return jsonify(result)
     app.run()
