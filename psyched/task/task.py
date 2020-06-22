@@ -211,8 +211,8 @@ class Task():
                 self >> task
         else:
             raise TypeError("Invalid type for >>")
-        return other
         self.check_cycles()
+        return other
 
     def __lshift__(self, other: Union[Task, List[Task]]) -> Union[Task, List[Task]]:
         """Operator <<.
@@ -226,8 +226,8 @@ class Task():
                 self << task
         else:
             raise TypeError("Invalid type for >>")
-        return other
         self.check_cycles()
+        return other
 
     def __rrshift__(self, other: List[Task]) -> Task:
         """Reverse operator >>.
